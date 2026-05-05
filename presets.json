@@ -1,0 +1,15 @@
+[
+  { "id": "es-1", "title": "小学1年", "file": "es-1.tsv" },
+  { "id": "es-2", "title": "小学2年", "file": "es-2.tsv" },
+  { "id": "es-3", "title": "小学3年", "file": "es-3.tsv" },
+  { "id": "es-4", "title": "小学4年", "file": "es-4.tsv" },
+  { "id": "es-5", "title": "小学5年", "file": "es-5.tsv" },
+  { "id": "es-6", "title": "小学6年", "file": "es-6.tsv" },
+  { "id": "jhs", "title": "中学常用漢字", "file": "jhs.tsv" },
+  { "id": "kk-10", "title": "漢検10級", "file": "kk-10.tsv" },
+  { "id": "kk-9", "title": "漢検9級", "file": "kk-9.tsv" },
+  { "id": "kk-8", "title": "漢検8級", "file": "kk-8.tsv" },
+  { "id": "kk-7", "title": "漢検7級", "file": "kk-7.tsv" },
+  { "id": "kk-6", "title": "漢検6級", "file": "kk-6.tsv" },
+  { "id": "kk-5", "title": "漢検5級", "file": "kk-5.tsv" }
+]
