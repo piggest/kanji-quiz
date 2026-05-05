@@ -21,7 +21,7 @@
   .container {
     max-width: 720px;
     margin: 0 auto;
-    padding: 32px 20px;
+    padding: 48px 20px 32px;
   }
   h1 {
     color: #fff;
@@ -478,12 +478,20 @@
     letter-spacing: 2px;
     margin-bottom: 6px;
   }
-  .memorize-reveal-en {
-    font-size: 2.4rem;
+  .memorize-reveal-jp {
+    font-size: 5rem;
     font-weight: 900;
     color: #78350f;
+    line-height: 1;
+    margin: 8px 0 12px;
+    letter-spacing: 4px;
+  }
+  .memorize-reveal-en {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #92400e;
     word-break: break-word;
-    line-height: 1.2;
+    line-height: 1.3;
   }
   .memorize-hint {
     text-align: center;
@@ -571,24 +579,79 @@
     75% { transform: rotate(-2deg); }
   }
   .flash-word {
-    font-size: 4rem;
-    font-weight: 800;
+    font-size: 5rem;
+    font-weight: 900;
     color: #fff;
-    text-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    text-shadow: 0 4px 16px rgba(0,0,0,0.3), 0 0 24px rgba(255,255,255,0.5);
     word-break: break-word;
     line-height: 1.1;
     margin-bottom: 6px;
+    letter-spacing: 36px;
+    transition: letter-spacing 0.7s cubic-bezier(.65,0,.35,1), transform 0.7s cubic-bezier(.65,0,.35,1), filter 0.5s ease-out;
   }
   .flash.show .flash-word {
-    animation: zoomIn 0.5s ease-out 0.15s backwards, pulse 1.4s ease-in-out infinite 0.65s;
+    animation: partsIn 0.7s cubic-bezier(.34,1.56,.64,1) 0.1s backwards;
   }
-  @keyframes zoomIn {
-    0% { transform: scale(0.4); opacity: 0; }
-    100% { transform: scale(1); opacity: 1; }
+  .flash-word.attracting {
+    letter-spacing: 2px;
+    transform: scale(1.15);
+    filter: drop-shadow(0 0 24px rgba(255,255,255,0.95)) drop-shadow(0 0 48px rgba(255,215,0,0.7));
   }
-  @keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.06); }
+  .flash-word.merged {
+    animation: explodeMerge 1.2s cubic-bezier(.34,1.56,.64,1);
+    letter-spacing: 0;
+    font-size: 8rem;
+    text-shadow: 0 0 40px #fff, 0 0 80px #ffd700, 0 6px 24px rgba(0,0,0,0.4);
+    filter: none;
+  }
+  @keyframes partsIn {
+    0% { transform: scale(0.4) translateY(-50px); opacity: 0; }
+    60% { transform: scale(1.15) translateY(0); }
+    100% { transform: scale(1) translateY(0); opacity: 1; }
+  }
+  @keyframes explodeMerge {
+    0% { transform: scale(0.1) rotate(-360deg); opacity: 0; filter: blur(20px) hue-rotate(0deg); }
+    25% { transform: scale(1.6) rotate(20deg); opacity: 1; filter: blur(0) hue-rotate(40deg); }
+    50% { transform: scale(0.85) rotate(-10deg); filter: hue-rotate(0deg); }
+    70% { transform: scale(1.2) rotate(5deg); }
+    85% { transform: scale(0.95) rotate(-2deg); }
+    100% { transform: scale(1.05) rotate(0); }
+  }
+  /* 光のリング */
+  .merge-ring {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 4px solid #fff;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+    pointer-events: none;
+  }
+  .flash-word.merged ~ .merge-ring {
+    animation: ringBurst 0.9s ease-out;
+  }
+  @keyframes ringBurst {
+    0% { transform: translate(-50%, -50%) scale(0); opacity: 1; border-width: 8px; }
+    100% { transform: translate(-50%, -50%) scale(20); opacity: 0; border-width: 1px; }
+  }
+  /* 衝突フラッシュ */
+  .flash-burst {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, rgba(255,255,255,0.95) 0%, rgba(255,215,0,0.4) 30%, transparent 70%);
+    opacity: 0;
+    pointer-events: none;
+  }
+  .flash-word.merged ~ .flash-burst {
+    animation: burst 0.6s ease-out;
+  }
+  @keyframes burst {
+    0% { opacity: 0; }
+    20% { opacity: 1; }
+    100% { opacity: 0; }
   }
   .flash-jp {
     font-size: 1.4rem;
@@ -983,16 +1046,14 @@
     letter-spacing: 2px;
     font-weight: 600;
   }
-  .ok-btn:disabled { background: #cbd5e0; cursor: not-allowed; }
-  .ok-btn { width: 100%; padding: 14px; font-size: 1.15rem; }
   .radical-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
-    gap: 8px;
+    gap: 12px;
     margin: 8px 0 12px;
-    max-height: 360px;
+    max-height: 420px;
     overflow-y: auto;
-    padding: 4px;
+    padding: 24px 8px 16px;
   }
   .radical-btn {
     aspect-ratio: 1;
@@ -1003,12 +1064,69 @@
     color: #2d3748;
     border-radius: 10px;
     cursor: pointer;
-    transition: transform 0.1s, border-color 0.15s, background 0.15s;
+    transition: transform 0.25s cubic-bezier(.34,1.56,.64,1), border-color 0.15s, background 0.15s, box-shadow 0.15s;
     user-select: none;
+    position: relative;
   }
-  .radical-btn:hover { border-color: #667eea; transform: translateY(-1px); }
-  .radical-btn:active { transform: translateY(0); }
-  .radical-btn.selected { background: #ebf4ff; border-color: #667eea; color: #2c5282; box-shadow: 0 0 0 3px rgba(102,126,234,0.25); }
+  .radical-btn:not(.selected):hover { border-color: #667eea; transform: translateY(-1px); }
+  .radical-btn:not(.selected):active { transform: translateY(0); }
+  .radical-btn.selected {
+    background: linear-gradient(135deg, #ffffff 0%, #ebf4ff 45%, #fef3c7 100%);
+    background-size: 200% 200%;
+    border-color: #667eea;
+    color: #2c5282;
+    box-shadow:
+      0 22px 32px -8px rgba(102,126,234,0.45),
+      0 10px 16px -6px rgba(102,126,234,0.35),
+      0 0 0 3px rgba(102,126,234,0.25),
+      0 0 32px rgba(255,215,0,0.55),
+      inset 0 0 12px rgba(255,255,255,0.6);
+    animation: rise 0.55s cubic-bezier(0.16, 1, 0.3, 1) both, floaty 2.4s ease-in-out 0.55s infinite, shimmer 3.2s linear infinite;
+  }
+  @keyframes rise {
+    0% { transform: translateY(0) rotate(0); }
+    100% { transform: translateY(-8px) rotate(-1.5deg); }
+  }
+  .radical-btn.selected { z-index: 2; }
+  .orbit-particle { display: none; }
+  .radical-btn.selected .orbit-particle {
+    display: block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 9px;
+    height: 9px;
+    margin: -4.5px 0 0 -4.5px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #fff 0%, #ffe066 50%, rgba(255,215,0,0) 100%);
+    box-shadow: 0 0 6px #ffd700, 0 0 12px rgba(255,255,255,0.8);
+    pointer-events: none;
+    animation: orbit 1.4s linear infinite, sparkle 0.9s ease-in-out infinite;
+  }
+  .radical-btn.selected .orbit-particle.p1 { animation-delay: 0s, 0s; }
+  .radical-btn.selected .orbit-particle.p2 { animation-delay: -0.23s, -0.15s; width: 6px; height: 6px; margin: -3px 0 0 -3px; }
+  .radical-btn.selected .orbit-particle.p3 { animation-delay: -0.47s, -0.30s; }
+  .radical-btn.selected .orbit-particle.p4 { animation-delay: -0.70s, -0.45s; width: 6px; height: 6px; margin: -3px 0 0 -3px; }
+  .radical-btn.selected .orbit-particle.p5 { animation-delay: -0.93s, -0.60s; }
+  .radical-btn.selected .orbit-particle.p6 { animation-delay: -1.17s, -0.75s; width: 6px; height: 6px; margin: -3px 0 0 -3px; }
+  @keyframes orbit {
+    from { transform: rotate(0deg) translateX(38px); }
+    to { transform: rotate(360deg) translateX(38px); }
+  }
+  @keyframes sparkle {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+  }
+  @keyframes floaty {
+    0%, 100% { transform: translateY(-8px) rotate(-1.5deg); }
+    25% { transform: translateY(-14px) rotate(0deg); }
+    50% { transform: translateY(-10px) rotate(1.5deg); }
+    75% { transform: translateY(-14px) rotate(0deg); }
+  }
+  @keyframes shimmer {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
+  }
   .radical-btn.disabled { pointer-events: none; opacity: 0.5; }
   .radical-btn.correct { background: #c6f6d5; border-color: #48bb78; color: #22543d; }
   .radical-btn.wrong { background: #fed7d7; border-color: #fc8181; color: #742a2a; animation: shake 0.4s; }
@@ -1147,6 +1265,8 @@
       <div class="flash-text">CORRECT!</div>
       <div class="flash-word" id="flash-word"></div>
       <div class="flash-jp" id="flash-jp"></div>
+      <div class="merge-ring"></div>
+      <div class="flash-burst"></div>
     </div>
   </div>
   <div class="reveal" id="reveal">
@@ -1281,6 +1401,46 @@
     });
   }
 
+  function playMergeSound() {
+    const t0 = audioCtx.currentTime;
+    // 低音インパクト
+    const low = audioCtx.createOscillator();
+    const lowG = audioCtx.createGain();
+    low.type = 'sine';
+    low.frequency.setValueAtTime(240, t0);
+    low.frequency.exponentialRampToValueAtTime(60, t0 + 0.3);
+    lowG.gain.setValueAtTime(0.4, t0);
+    lowG.gain.exponentialRampToValueAtTime(0.01, t0 + 0.55);
+    low.connect(lowG);
+    lowG.connect(audioCtx.destination);
+    low.start(t0);
+    low.stop(t0 + 0.6);
+    // 高音シマー（和音）
+    [1568, 2093, 2637, 3136].forEach((f, i) => {
+      const osc = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.value = f;
+      g.gain.setValueAtTime(0.12, t0 + i * 0.05);
+      g.gain.exponentialRampToValueAtTime(0.01, t0 + i * 0.05 + 0.55);
+      osc.connect(g);
+      g.connect(audioCtx.destination);
+      osc.start(t0 + i * 0.05);
+      osc.stop(t0 + i * 0.05 + 0.6);
+    });
+    // ノイズバースト
+    const buf = audioCtx.createBuffer(1, Math.floor(audioCtx.sampleRate * 0.12), audioCtx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / data.length);
+    const noise = audioCtx.createBufferSource();
+    const noiseG = audioCtx.createGain();
+    noise.buffer = buf;
+    noiseG.gain.value = 0.18;
+    noise.connect(noiseG);
+    noiseG.connect(audioCtx.destination);
+    noise.start(t0);
+  }
+
   function playWrongSound() {
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
@@ -1390,8 +1550,9 @@
   let currentChoices = [];
 
   function radicalGridHTML(choices) {
+    const particles = '<span class="orbit-particle p1"></span><span class="orbit-particle p2"></span><span class="orbit-particle p3"></span><span class="orbit-particle p4"></span><span class="orbit-particle p5"></span><span class="orbit-particle p6"></span>';
     return `<div class="radical-grid" id="radical-grid">${
-      choices.map(r => `<button type="button" class="radical-btn" data-r="${escapeHtml(r)}">${escapeHtml(r)}</button>`).join('')
+      choices.map(r => `<button type="button" class="radical-btn" data-r="${escapeHtml(r)}">${escapeHtml(r)}${particles}</button>`).join('')
     }</div>`;
   }
 
@@ -1409,7 +1570,6 @@
         <div class="quiz-reading-q">${reading || '—'}</div>
         ${radicalGridHTML(currentChoices)}
         <div class="selected-row" id="selected-row"></div>
-        <button class="next-btn ok-btn" id="ok-btn" disabled>OK</button>
         <div class="quiz-meta">
           <span>進捗: ${progress} / ${roundStats.total}</span>
           <span>未習得: ${mistakeQueue.length}</span>
@@ -1420,7 +1580,6 @@
         <div class="quiz-reading-q">${reading || '—'}</div>
         ${radicalGridHTML(currentChoices)}
         <div class="selected-row" id="selected-row"></div>
-        <button class="next-btn ok-btn" id="ok-btn" disabled>OK</button>
         <div class="hearts" id="hearts">${renderHearts(0)}</div>
         <div class="quiz-meta">
           <span>${progress} / ${roundStats.total} 問</span>
@@ -1444,39 +1603,31 @@
     content.innerHTML = `
       <div class="quiz-reading-q">${reading || '—'}</div>
       <div class="memorize-reveal">
-        <div class="memorize-reveal-label">こたえ「${escapeHtml(currentWord.jp)}」の部首</div>
-        <div class="memorize-reveal-en">${correctList.map(escapeHtml).join(' ／ ')}</div>
+        <div class="memorize-reveal-label">こたえ</div>
+        <div class="memorize-reveal-jp">${escapeHtml(currentWord.jp)}</div>
+        <div class="memorize-reveal-en">部首: ${correctList.map(escapeHtml).join(' ／ ')}</div>
       </div>
-      <div class="memorize-hint">同じ組み合わせを選んで OK</div>
+      <div class="memorize-hint">同じ組み合わせを選んでね</div>
       ${radicalGridHTML(currentChoices)}
       <div class="selected-row" id="selected-row"></div>
-      <button class="next-btn ok-btn" id="ok-btn" disabled>OK</button>
       <div class="quiz-meta">
         <span>進捗: ${progress} / ${roundStats.total}</span>
         <span>未習得: ${mistakeQueue.length}</span>
       </div>
     `;
-    bindRadicalGrid({ hints: correctList });
+    bindRadicalGrid();
   }
 
   function updateSelectedRow() {
     const row = document.getElementById('selected-row');
-    const okBtn = document.getElementById('ok-btn');
     if (row) {
       row.textContent = selected.size === 0 ? '部首を選んでね' : '選択: ' + Array.from(selected).join(' ／ ');
     }
-    if (okBtn) okBtn.disabled = selected.size === 0 || locked;
   }
 
-  function bindRadicalGrid(opts = {}) {
+  function bindRadicalGrid() {
     const grid = document.getElementById('radical-grid');
     if (!grid) return;
-    if (opts.hints) {
-      opts.hints.forEach(h => {
-        const target = grid.querySelector(`.radical-btn[data-r="${CSS.escape(h)}"]`);
-        if (target) target.classList.add('hint');
-      });
-    }
     grid.querySelectorAll('.radical-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         if (locked) return;
@@ -1489,15 +1640,13 @@
           btn.classList.add('selected');
         }
         updateSelectedRow();
+        // 正解集合と同サイズになった瞬間に判定
+        const correctSet = new Set(splitRadicals(currentWord.en));
+        if (selected.size === correctSet.size) {
+          checkAnswer(Array.from(selected));
+        }
       });
     });
-    const okBtn = document.getElementById('ok-btn');
-    if (okBtn) {
-      okBtn.addEventListener('click', () => {
-        if (locked || selected.size === 0) return;
-        checkAnswer(Array.from(selected));
-      });
-    }
     updateSelectedRow();
   }
 
@@ -1644,31 +1793,33 @@
     lastSubmitted = sig;
     const correctSet = new Set(splitRadicals(currentWord.en));
     const grid = document.getElementById('radical-grid');
-    const okBtn = document.getElementById('ok-btn');
     if (setsEqual(answerSet, correctSet)) {
       if (grid) grid.querySelectorAll('.radical-btn').forEach(b => {
         if (correctSet.has(b.dataset.r)) b.classList.add('correct');
         b.classList.add('disabled');
       });
-      if (okBtn) okBtn.disabled = true;
       if (memorizeRetry) {
         memorizeRetry = false;
         locked = true;
-        playCorrectSound();
-        setTimeout(() => { locked = false; nextQuestion(); }, 600);
+        celebrate();
+        setTimeout(() => { locked = false; nextQuestion(); }, 2000);
         return;
       }
       roundStats.correct++;
       locked = true;
       celebrate();
-      setTimeout(() => { locked = false; nextQuestion(); }, 1800);
+      setTimeout(() => { locked = false; nextQuestion(); }, 2000);
     } else {
       if (grid) {
         grid.querySelectorAll('.radical-btn.selected').forEach(b => {
           b.classList.add('wrong');
+          b.classList.remove('selected');
           setTimeout(() => b.classList.remove('wrong'), 500);
         });
       }
+      selected.clear();
+      lastSubmitted = null;
+      updateSelectedRow();
       if (mode === 'memorize') {
         if (memorizeRetry) {
           playWrongSound();
@@ -1690,7 +1841,6 @@
         roundStats.failed++;
         locked = true;
         if (grid) grid.querySelectorAll('.radical-btn').forEach(b => b.classList.add('disabled'));
-        if (okBtn) okBtn.disabled = true;
         revealAnswer(currentWord, () => { locked = false; nextQuestion(); });
       } else {
         lastSubmitted = null;
@@ -1741,37 +1891,61 @@
   function celebrate() {
     playCorrectSound();
     const flash = document.getElementById('flash');
+    const word = document.getElementById('flash-word');
+    const jp = document.getElementById('flash-jp');
     if (currentWord) {
-      document.getElementById('flash-word').textContent = currentWord.jp;
-      const parts = splitRadicals(currentWord.en).join(' ／ ');
-      document.getElementById('flash-jp').textContent = `部首: ${parts}` + (currentWord.reading ? `（${currentWord.reading}）` : '');
+      const parts = splitRadicals(currentWord.en);
+      // まず選んだ部首を「金 + 艮」のように並べて表示
+      word.classList.remove('merged', 'attracting');
+      word.textContent = parts.join(' + ');
+      jp.textContent = currentWord.reading ? '読み: ' + currentWord.reading : '';
+      // 0.6秒後に部首が中央に吸い寄せられる（溜め）
+      setTimeout(() => word.classList.add('attracting'), 600);
+      // 1.1秒後に爆発合体
+      setTimeout(() => {
+        word.classList.remove('attracting');
+        word.classList.add('merged');
+        word.textContent = currentWord.jp;
+        playMergeSound();
+      }, 1100);
     }
     flash.classList.add('show');
-    setTimeout(() => flash.classList.remove('show'), 1800);
+    setTimeout(() => flash.classList.remove('show'), 2000);
 
-    // 紙吹雪を派手に
-    const duration = 1800;
+    // マージ瞬間にバーストconfetti（中央から放射）
+    setTimeout(() => {
+      confetti({
+        particleCount: 260,
+        spread: 360,
+        startVelocity: 55,
+        origin: { x: 0.5, y: 0.5 },
+        colors: ['#f6e05e', '#fc8181', '#63b3ed', '#68d391', '#b794f4', '#ffffff', '#ffd700']
+      });
+    }, 1100);
+
+    // 連続confetti
+    const duration = 2000;
     const end = Date.now() + duration;
     (function frame() {
       confetti({
-        particleCount: 4,
+        particleCount: 6,
         angle: 60,
-        spread: 70,
+        spread: 80,
         origin: { x: 0, y: 0.7 },
         colors: ['#f6e05e', '#fc8181', '#63b3ed', '#68d391', '#b794f4']
       });
       confetti({
-        particleCount: 4,
+        particleCount: 6,
         angle: 120,
-        spread: 70,
+        spread: 80,
         origin: { x: 1, y: 0.7 },
         colors: ['#f6e05e', '#fc8181', '#63b3ed', '#68d391', '#b794f4']
       });
       if (Date.now() < end) requestAnimationFrame(frame);
     })();
     confetti({
-      particleCount: 100,
-      spread: 100,
+      particleCount: 150,
+      spread: 120,
       origin: { y: 0.6 }
     });
   }
