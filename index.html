@@ -1175,17 +1175,14 @@
   .radical-btn:not(.selected):active { transform: translateY(0); }
   .radical-btn.selected {
     background: linear-gradient(135deg, #ffffff 0%, #ebf4ff 45%, #fef3c7 100%);
-    background-size: 200% 200%;
     border-color: #667eea;
     color: #2c5282;
     box-shadow:
-      0 22px 32px -8px rgba(102,126,234,0.45),
-      0 10px 16px -6px rgba(102,126,234,0.35),
+      0 18px 26px -8px rgba(102,126,234,0.4),
       0 0 0 3px rgba(102,126,234,0.25),
-      0 0 32px rgba(255,215,0,0.55),
-      inset 0 0 12px rgba(255,255,255,0.6);
-    animation: rise 0.55s cubic-bezier(0.16, 1, 0.3, 1) both, floaty 2.4s ease-in-out 0.55s infinite, shimmer 3.2s linear infinite;
-    will-change: transform, background-position;
+      0 0 24px rgba(255,215,0,0.5);
+    animation: rise 0.55s cubic-bezier(0.16, 1, 0.3, 1) both, floaty 2.4s ease-in-out 0.55s infinite;
+    will-change: transform;
     contain: layout paint;
   }
   @keyframes rise {
@@ -1199,23 +1196,21 @@
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 9px;
-    height: 9px;
-    margin: -4.5px 0 0 -4.5px;
+    width: 8px;
+    height: 8px;
+    margin: -4px 0 0 -4px;
     border-radius: 50%;
     background: radial-gradient(circle, #fff 0%, #ffe066 50%, rgba(255,215,0,0) 100%);
-    box-shadow: 0 0 6px #ffd700, 0 0 12px rgba(255,255,255,0.8);
     pointer-events: none;
-    animation: orbit 1.4s linear infinite, sparkle 0.9s ease-in-out infinite;
-    will-change: transform, opacity;
-    transform: translateZ(0);
+    animation: orbit 1.4s linear infinite;
+    will-change: transform;
   }
-  .radical-btn.selected .orbit-particle.p1 { animation-delay: 0s, 0s; }
-  .radical-btn.selected .orbit-particle.p2 { animation-delay: -0.23s, -0.15s; width: 6px; height: 6px; margin: -3px 0 0 -3px; }
-  .radical-btn.selected .orbit-particle.p3 { animation-delay: -0.47s, -0.30s; }
-  .radical-btn.selected .orbit-particle.p4 { animation-delay: -0.70s, -0.45s; width: 6px; height: 6px; margin: -3px 0 0 -3px; }
-  .radical-btn.selected .orbit-particle.p5 { animation-delay: -0.93s, -0.60s; }
-  .radical-btn.selected .orbit-particle.p6 { animation-delay: -1.17s, -0.75s; width: 6px; height: 6px; margin: -3px 0 0 -3px; }
+  .radical-btn.selected .orbit-particle.p1 { animation-delay: 0s; }
+  .radical-btn.selected .orbit-particle.p2 { animation-delay: -0.35s; }
+  .radical-btn.selected .orbit-particle.p3 { animation-delay: -0.70s; }
+  .radical-btn.selected .orbit-particle.p4 { animation-delay: -1.05s; }
+  .radical-btn.selected .orbit-particle.p5,
+  .radical-btn.selected .orbit-particle.p6 { display: none; }
   @keyframes orbit {
     from { transform: rotate(0deg) translateX(38px); }
     to { transform: rotate(360deg) translateX(38px); }
