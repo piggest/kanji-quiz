@@ -1931,13 +1931,11 @@
         memorizeRetry = false;
         locked = true;
         celebrate();
-        setTimeout(() => { locked = false; nextQuestion(); }, 2000);
         return;
       }
       roundStats.correct++;
       locked = true;
       celebrate();
-      setTimeout(() => { locked = false; nextQuestion(); }, 2000);
     } else {
       if (grid) {
         grid.querySelectorAll('.radical-btn.selected').forEach(b => {
@@ -2039,7 +2037,24 @@
       }, 1100);
     }
     flash.classList.add('show');
-    setTimeout(() => flash.classList.remove('show'), 2000);
+
+    // クリックまたは Enter/スペースで次へ
+    const advance = () => {
+      flash.removeEventListener('click', advance);
+      document.removeEventListener('keydown', onKey);
+      flash.classList.remove('show');
+      flash.style.pointerEvents = '';
+      locked = false;
+      nextQuestion();
+    };
+    const onKey = (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); advance(); }
+    };
+    setTimeout(() => {
+      flash.style.pointerEvents = 'auto';
+      flash.addEventListener('click', advance);
+      document.addEventListener('keydown', onKey);
+    }, 1300);
 
     // マージ瞬間にバーストconfetti（中央から放射）
     setTimeout(() => {
