@@ -225,7 +225,7 @@
   .word-jp { font-weight: 700; }
   .word-en { color: #4a5568; }
   .word-reading { color: #718096; font-size: 0.9rem; }
-  .word-actions { display: flex; gap: 2px; justify-content: flex-end; }
+  .word-actions { display: flex; gap: 2px; justify-content: flex-end; pointer-events: auto; }
   .word-actions button {
     border: none;
     background: transparent;
@@ -240,8 +240,9 @@
   .word-actions .delete-btn:hover { background: #fed7d7; color: #c53030; }
   .move-btn:disabled { opacity: 0.3; cursor: default; }
   .move-btn:disabled:hover { background: transparent; color: #718096; }
-  .word-item { cursor: grab; transition: outline 0.1s, opacity 0.1s; outline: 2px solid transparent; }
+  .word-item { cursor: grab; transition: outline 0.1s, opacity 0.1s; outline: 2px solid transparent; user-select: none; -webkit-user-drag: element; }
   .word-item:active { cursor: grabbing; }
+  .word-item .word-num, .word-item .word-jp, .word-item .word-en, .word-item .word-reading { user-select: none; pointer-events: none; }
   .word-item.dragging { opacity: 0.4; }
   .word-item.drag-over-top { outline-color: #667eea; outline-offset: -2px; box-shadow: 0 -3px 0 -1px #667eea inset; }
   .word-item.drag-over-bottom { outline-color: #667eea; outline-offset: -2px; box-shadow: 0 3px 0 -1px #667eea inset; }
@@ -254,6 +255,11 @@
     width: 92%;
     max-width: 420px;
     box-shadow: 0 24px 48px rgba(0,0,0,0.3);
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
   }
   .edit-dialog::backdrop { background: rgba(0,0,0,0.45); }
   .edit-form { display: flex; flex-direction: column; gap: 12px; padding: 24px; }
@@ -289,6 +295,17 @@
   .edit-cancel-btn:hover { background: #cbd5e0; }
   .edit-save-btn { background: #667eea; color: #fff; }
   .edit-save-btn:hover { background: #5a67d8; }
+  .word-search {
+    display: block;
+    width: 100%;
+    padding: 9px 12px;
+    margin-bottom: 8px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    background: #fff;
+  }
+  .word-search:focus { border-color: #667eea; outline: none; }
   .add-row-btn {
     display: block;
     width: 100%;
@@ -1319,6 +1336,7 @@
 
         <div class="section-title">漢字一覧</div>
         <div class="word-count" id="word-count"></div>
+        <input type="text" class="word-search" id="word-search" placeholder="🔍 検索（漢字・部首・読み）" autocomplete="off">
         <button class="add-row-btn" id="add-row-btn">＋ 漢字を追加</button>
         <ul class="word-list" id="word-list"></ul>
       </div>
@@ -2103,6 +2121,18 @@
 
   document.getElementById('add-row-btn').addEventListener('click', () => openEditDialog(null));
 
+  // 検索
+  const searchInput = document.getElementById('word-search');
+  function applySearchFilter() {
+    const q = (searchInput.value || '').trim().toLowerCase();
+    document.querySelectorAll('#word-list .word-item').forEach(li => {
+      if (!q) { li.style.display = ''; return; }
+      const txt = li.textContent.toLowerCase();
+      li.style.display = txt.includes(q) ? '' : 'none';
+    });
+  }
+  searchInput.addEventListener('input', applySearchFilter);
+
   // 一覧表示
   function renderList() {
     const list = document.getElementById('word-list');
@@ -2209,6 +2239,8 @@
         renderList();
       });
     });
+
+    if (typeof applySearchFilter === 'function') applySearchFilter();
   }
 
   // インポート/エクスポート
