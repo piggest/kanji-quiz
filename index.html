@@ -203,7 +203,7 @@
   }
   .word-item {
     display: grid;
-    grid-template-columns: 36px 70px 1fr 1.4fr 84px;
+    grid-template-columns: 32px 56px 1fr 1.3fr 124px;
     gap: 8px;
     align-items: center;
     padding: 8px 10px;
@@ -217,27 +217,14 @@
     user-select: none;
   }
   .word-jp, .word-en, .word-reading {
-    padding: 6px 8px;
-    border-radius: 6px;
-    background: #fff;
-    border: 1px solid transparent;
-    cursor: text;
-    min-height: 1.5em;
+    padding: 4px 6px;
     word-break: break-word;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .word-jp { font-weight: 700; }
   .word-en { color: #4a5568; }
   .word-reading { color: #718096; font-size: 0.9rem; }
-  .word-jp:focus, .word-en:focus, .word-reading:focus {
-    outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 2px rgba(102,126,234,0.2);
-    background: #fffefb;
-  }
-  .word-jp:empty::before, .word-en:empty::before, .word-reading:empty::before {
-    content: attr(data-ph);
-    color: #cbd5e0;
-  }
   .word-actions { display: flex; gap: 2px; justify-content: flex-end; }
   .word-actions button {
     border: none;
@@ -246,12 +233,62 @@
     padding: 4px 6px;
     border-radius: 4px;
     color: #718096;
-    font-size: 0.85rem;
+    font-size: 0.95rem;
   }
   .word-actions button:hover { background: rgba(0,0,0,0.06); color: #2d3748; }
+  .word-actions .edit-btn:hover { background: #ebf4ff; color: #4c51bf; }
   .word-actions .delete-btn:hover { background: #fed7d7; color: #c53030; }
   .move-btn:disabled { opacity: 0.3; cursor: default; }
   .move-btn:disabled:hover { background: transparent; color: #718096; }
+  .word-item { cursor: grab; transition: outline 0.1s, opacity 0.1s; outline: 2px solid transparent; }
+  .word-item:active { cursor: grabbing; }
+  .word-item.dragging { opacity: 0.4; }
+  .word-item.drag-over-top { outline-color: #667eea; outline-offset: -2px; box-shadow: 0 -3px 0 -1px #667eea inset; }
+  .word-item.drag-over-bottom { outline-color: #667eea; outline-offset: -2px; box-shadow: 0 3px 0 -1px #667eea inset; }
+  .word-actions button { cursor: pointer; }
+  /* 編集ダイアログ */
+  .edit-dialog {
+    border: none;
+    border-radius: 14px;
+    padding: 0;
+    width: 92%;
+    max-width: 420px;
+    box-shadow: 0 24px 48px rgba(0,0,0,0.3);
+  }
+  .edit-dialog::backdrop { background: rgba(0,0,0,0.45); }
+  .edit-form { display: flex; flex-direction: column; gap: 12px; padding: 24px; }
+  .edit-form h3 { margin: 0 0 4px; font-size: 1.15rem; color: #2d3748; }
+  .edit-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 0.8rem;
+    color: #4a5568;
+    font-weight: 600;
+  }
+  .edit-form input {
+    padding: 10px 12px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 400;
+    color: #2d3748;
+    background: #fff;
+  }
+  .edit-form input:focus { border-color: #667eea; outline: none; }
+  .edit-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px; }
+  .edit-actions button {
+    padding: 9px 18px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
+  .edit-cancel-btn { background: #e2e8f0; color: #4a5568; }
+  .edit-cancel-btn:hover { background: #cbd5e0; }
+  .edit-save-btn { background: #667eea; color: #fff; }
+  .edit-save-btn:hover { background: #5a67d8; }
   .add-row-btn {
     display: block;
     width: 100%;
@@ -1329,6 +1366,25 @@
   </div>
   <div class="toast" id="toast"></div>
 
+  <dialog class="edit-dialog" id="edit-dialog">
+    <form class="edit-form" id="edit-form">
+      <h3 id="edit-title">漢字を編集</h3>
+      <label>漢字
+        <input type="text" id="edit-jp" autocomplete="off" spellcheck="false" required>
+      </label>
+      <label>部首（カンマ区切で複数）
+        <input type="text" id="edit-en" autocomplete="off" spellcheck="false" required>
+      </label>
+      <label>読み・いみ（任意）
+        <input type="text" id="edit-reading" autocomplete="off" spellcheck="false">
+      </label>
+      <div class="edit-actions">
+        <button type="button" class="edit-cancel-btn" id="edit-cancel">キャンセル</button>
+        <button type="submit" class="edit-save-btn" id="edit-save">保存</button>
+      </div>
+    </form>
+  </dialog>
+
 <script>
   const DECKS_KEY = 'kanji-quiz-decks';
   const ACTIVE_DECK_KEY = 'kanji-quiz-active-deck-id';
@@ -1992,18 +2048,60 @@
     });
   }
 
-  // 一番上に空行追加→編集状態
-  document.getElementById('add-row-btn').addEventListener('click', () => {
-    const id = 'w' + Date.now() + Math.random().toString(36).slice(2, 6);
-    activeDeck.words.unshift({ jp: '', en: '', reading: '', id });
+  // ダイアログ操作
+  const editDialog = document.getElementById('edit-dialog');
+  const editForm = document.getElementById('edit-form');
+  const editJp = document.getElementById('edit-jp');
+  const editEn = document.getElementById('edit-en');
+  const editReading = document.getElementById('edit-reading');
+  const editTitle = document.getElementById('edit-title');
+  let editingId = null;
+
+  function openEditDialog(id) {
+    editingId = id;
+    if (id == null) {
+      editTitle.textContent = '漢字を追加';
+      editJp.value = ''; editEn.value = ''; editReading.value = '';
+    } else {
+      const w = activeDeck.words.find(w => String(w.id) === String(id));
+      if (!w) return;
+      editTitle.textContent = '漢字を編集';
+      editJp.value = w.jp || '';
+      editEn.value = w.en || '';
+      editReading.value = w.reading || '';
+    }
+    editDialog.showModal();
+    requestAnimationFrame(() => editJp.focus());
+  }
+
+  document.getElementById('edit-cancel').addEventListener('click', () => editDialog.close());
+
+  editForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const jp = editJp.value.trim();
+    const en = editEn.value.trim();
+    const reading = editReading.value.trim();
+    if (!jp || !en) { showToast('漢字と部首を入力してください'); return; }
+    if (editingId == null) {
+      const id = 'w' + Date.now() + Math.random().toString(36).slice(2, 6);
+      const entry = { jp, en, id };
+      if (reading) entry.reading = reading;
+      activeDeck.words.unshift(entry);
+    } else {
+      const w = activeDeck.words.find(w => String(w.id) === String(editingId));
+      if (w) {
+        w.jp = jp; w.en = en;
+        if (reading) w.reading = reading;
+        else delete w.reading;
+      }
+    }
     save();
     renderList();
-    const cell = document.querySelector(`.word-item[data-id="${id}"] .word-jp`);
-    if (cell) {
-      cell.focus();
-      cell.scrollIntoView({ block: 'nearest' });
-    }
+    renderDeckList();
+    editDialog.close();
   });
+
+  document.getElementById('add-row-btn').addEventListener('click', () => openEditDialog(null));
 
   // 一覧表示
   function renderList() {
@@ -2017,41 +2115,32 @@
     }
     const total = activeDeck.words.length;
     list.innerHTML = activeDeck.words.map((w, i) => `
-      <li class="word-item" data-id="${w.id}">
+      <li class="word-item" data-id="${w.id}" draggable="true">
         <span class="word-num">${i + 1}</span>
-        <span class="word-jp" contenteditable="true" data-field="jp" data-ph="漢字" spellcheck="false">${escapeHtml(w.jp)}</span>
-        <span class="word-en" contenteditable="true" data-field="en" data-ph="部首,複数,可" spellcheck="false">${escapeHtml(w.en)}</span>
-        <span class="word-reading" contenteditable="true" data-field="reading" data-ph="読み" spellcheck="false">${escapeHtml(w.reading || '')}</span>
+        <span class="word-jp">${escapeHtml(w.jp)}</span>
+        <span class="word-en">${escapeHtml(w.en)}</span>
+        <span class="word-reading">${escapeHtml(w.reading || '')}</span>
         <div class="word-actions">
           <button class="move-btn" data-dir="up" title="上へ"${i === 0 ? ' disabled' : ''}>↑</button>
           <button class="move-btn" data-dir="down" title="下へ"${i === total - 1 ? ' disabled' : ''}>↓</button>
+          <button class="edit-btn" title="編集">✎</button>
           <button class="delete-btn" title="削除">×</button>
         </div>
       </li>
     `).join('');
 
-    // セル編集（contenteditable）
-    list.querySelectorAll('.word-jp,.word-en,.word-reading').forEach(el => {
-      el.addEventListener('blur', () => {
-        const li = el.closest('.word-item');
-        const word = activeDeck.words.find(w => String(w.id) === li.dataset.id);
-        if (!word) return;
-        const v = el.textContent.trim();
-        if (word[el.dataset.field] !== v) {
-          word[el.dataset.field] = v;
-          save();
-          renderDeckList();
-        }
-      });
-      el.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') { e.preventDefault(); el.blur(); }
-        if (e.key === 'Escape') { e.preventDefault(); el.blur(); renderList(); }
+    // 編集
+    list.querySelectorAll('.edit-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openEditDialog(btn.closest('.word-item').dataset.id);
       });
     });
 
     // 並び替え（↑↓）
     list.querySelectorAll('.move-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
         if (btn.disabled) return;
         const li = btn.closest('.word-item');
         const idx = activeDeck.words.findIndex(w => String(w.id) === li.dataset.id);
@@ -2066,13 +2155,58 @@
 
     // 削除
     list.querySelectorAll('.delete-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
         const li = btn.closest('.word-item');
         const id = li.dataset.id;
         activeDeck.words = activeDeck.words.filter(w => String(w.id) !== id);
         save();
         renderList();
         renderDeckList();
+      });
+    });
+
+    // ドラッグ&ドロップ
+    let dragSrcId = null;
+    list.querySelectorAll('.word-item').forEach(li => {
+      li.addEventListener('dragstart', (e) => {
+        dragSrcId = li.dataset.id;
+        li.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', li.dataset.id);
+      });
+      li.addEventListener('dragend', () => {
+        li.classList.remove('dragging');
+        list.querySelectorAll('.drag-over-top,.drag-over-bottom').forEach(el => {
+          el.classList.remove('drag-over-top', 'drag-over-bottom');
+        });
+        dragSrcId = null;
+      });
+      li.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        if (!dragSrcId || li.dataset.id === dragSrcId) return;
+        const rect = li.getBoundingClientRect();
+        const above = (e.clientY - rect.top) < rect.height / 2;
+        list.querySelectorAll('.drag-over-top,.drag-over-bottom').forEach(el => {
+          el.classList.remove('drag-over-top', 'drag-over-bottom');
+        });
+        li.classList.add(above ? 'drag-over-top' : 'drag-over-bottom');
+        e.dataTransfer.dropEffect = 'move';
+      });
+      li.addEventListener('drop', (e) => {
+        e.preventDefault();
+        if (!dragSrcId || li.dataset.id === dragSrcId) return;
+        const rect = li.getBoundingClientRect();
+        const above = (e.clientY - rect.top) < rect.height / 2;
+        const fromIdx = activeDeck.words.findIndex(w => String(w.id) === dragSrcId);
+        let toIdx = activeDeck.words.findIndex(w => String(w.id) === li.dataset.id);
+        if (fromIdx < 0 || toIdx < 0) return;
+        const [moved] = activeDeck.words.splice(fromIdx, 1);
+        if (fromIdx < toIdx) toIdx--;
+        if (!above) toIdx++;
+        activeDeck.words.splice(toIdx, 0, moved);
+        save();
+        renderList();
       });
     });
   }
