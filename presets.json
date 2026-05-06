@@ -7,6 +7,7 @@
   { "id": "es-6", "title": "小学6年", "file": "es-6.tsv" },
   { "id": "jhs", "title": "中学常用漢字", "file": "jhs.tsv" },
   { "id": "jhs-1mid", "title": "中学漢字 1学期中間", "file": "jhs-1mid.tsv" },
+  { "id": "jhs-bio-plant", "title": "中学理科 植物・観察", "file": "jhs-bio-plant.tsv" },
   { "id": "kk-10", "title": "漢検10級", "file": "kk-10.tsv" },
   { "id": "kk-9", "title": "漢検9級", "file": "kk-9.tsv" },
   { "id": "kk-8", "title": "漢検8級", "file": "kk-8.tsv" },
