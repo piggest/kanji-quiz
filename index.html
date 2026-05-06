@@ -689,6 +689,7 @@
     margin-bottom: 6px;
     letter-spacing: 36px;
     transition: letter-spacing 0.7s cubic-bezier(.65,0,.35,1), transform 0.7s cubic-bezier(.65,0,.35,1), filter 0.5s ease-out;
+    will-change: transform, letter-spacing, filter;
   }
   .flash.show .flash-word {
     animation: partsIn 0.7s cubic-bezier(.34,1.56,.64,1) 0.1s backwards;
@@ -1184,6 +1185,8 @@
       0 0 32px rgba(255,215,0,0.55),
       inset 0 0 12px rgba(255,255,255,0.6);
     animation: rise 0.55s cubic-bezier(0.16, 1, 0.3, 1) both, floaty 2.4s ease-in-out 0.55s infinite, shimmer 3.2s linear infinite;
+    will-change: transform, background-position;
+    contain: layout paint;
   }
   @keyframes rise {
     0% { transform: translateY(0) rotate(0); }
@@ -1204,6 +1207,8 @@
     box-shadow: 0 0 6px #ffd700, 0 0 12px rgba(255,255,255,0.8);
     pointer-events: none;
     animation: orbit 1.4s linear infinite, sparkle 0.9s ease-in-out infinite;
+    will-change: transform, opacity;
+    transform: translateZ(0);
   }
   .radical-btn.selected .orbit-particle.p1 { animation-delay: 0s, 0s; }
   .radical-btn.selected .orbit-particle.p2 { animation-delay: -0.23s, -0.15s; width: 6px; height: 6px; margin: -3px 0 0 -3px; }
