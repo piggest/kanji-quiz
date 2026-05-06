@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>漢字クイズ</title>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -242,8 +243,8 @@
   .word-item:active { cursor: grabbing; }
   .word-item .word-num, .word-item .word-jp, .word-item .word-en, .word-item .word-reading { user-select: none; pointer-events: none; }
   .word-item.dragging { opacity: 0.4; }
-  .word-item.drag-over-top { outline-color: #667eea; outline-offset: -2px; box-shadow: 0 -3px 0 -1px #667eea inset; }
-  .word-item.drag-over-bottom { outline-color: #667eea; outline-offset: -2px; box-shadow: 0 3px 0 -1px #667eea inset; }
+  .word-item.drag-ghost { opacity: 0.4; background: #ebf4ff; }
+  .word-item.drag-chosen { outline-color: #667eea; }
   .word-actions button { cursor: pointer; }
   /* 編集ダイアログ */
   .edit-dialog {
@@ -2143,7 +2144,7 @@
     }
     const total = activeDeck.words.length;
     list.innerHTML = activeDeck.words.map((w, i) => `
-      <li class="word-item" data-id="${w.id}" draggable="true">
+      <li class="word-item" data-id="${w.id}">
         <span class="word-num">${i + 1}</span>
         <span class="word-jp">${escapeHtml(w.jp)}</span>
         <span class="word-en">${escapeHtml(w.en)}</span>
@@ -2194,49 +2195,28 @@
       });
     });
 
-    // ドラッグ&ドロップ
-    let dragSrcId = null;
-    list.querySelectorAll('.word-item').forEach(li => {
-      li.addEventListener('dragstart', (e) => {
-        dragSrcId = li.dataset.id;
-        li.classList.add('dragging');
-        e.dataTransfer.effectAllowed = 'move';
-        e.dataTransfer.setData('text/plain', li.dataset.id);
+    // Sortable.js でドラッグ&ドロップ（タッチ対応）
+    if (typeof Sortable !== 'undefined') {
+      if (list._sortable) list._sortable.destroy();
+      list._sortable = Sortable.create(list, {
+        animation: 150,
+        delay: 200,
+        delayOnTouchOnly: true,
+        touchStartThreshold: 5,
+        ghostClass: 'drag-ghost',
+        chosenClass: 'drag-chosen',
+        dragClass: 'dragging',
+        filter: '.edit-btn,.delete-btn,.move-btn',
+        preventOnFilter: false,
+        onEnd: (evt) => {
+          if (evt.oldIndex === evt.newIndex) return;
+          const [moved] = activeDeck.words.splice(evt.oldIndex, 1);
+          activeDeck.words.splice(evt.newIndex, 0, moved);
+          save();
+          renderList();
+        }
       });
-      li.addEventListener('dragend', () => {
-        li.classList.remove('dragging');
-        list.querySelectorAll('.drag-over-top,.drag-over-bottom').forEach(el => {
-          el.classList.remove('drag-over-top', 'drag-over-bottom');
-        });
-        dragSrcId = null;
-      });
-      li.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        if (!dragSrcId || li.dataset.id === dragSrcId) return;
-        const rect = li.getBoundingClientRect();
-        const above = (e.clientY - rect.top) < rect.height / 2;
-        list.querySelectorAll('.drag-over-top,.drag-over-bottom').forEach(el => {
-          el.classList.remove('drag-over-top', 'drag-over-bottom');
-        });
-        li.classList.add(above ? 'drag-over-top' : 'drag-over-bottom');
-        e.dataTransfer.dropEffect = 'move';
-      });
-      li.addEventListener('drop', (e) => {
-        e.preventDefault();
-        if (!dragSrcId || li.dataset.id === dragSrcId) return;
-        const rect = li.getBoundingClientRect();
-        const above = (e.clientY - rect.top) < rect.height / 2;
-        const fromIdx = activeDeck.words.findIndex(w => String(w.id) === dragSrcId);
-        let toIdx = activeDeck.words.findIndex(w => String(w.id) === li.dataset.id);
-        if (fromIdx < 0 || toIdx < 0) return;
-        const [moved] = activeDeck.words.splice(fromIdx, 1);
-        if (fromIdx < toIdx) toIdx--;
-        if (!above) toIdx++;
-        activeDeck.words.splice(toIdx, 0, moved);
-        save();
-        renderList();
-      });
-    });
+    }
 
     if (typeof applySearchFilter === 'function') applySearchFilter();
   }
