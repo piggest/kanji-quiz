@@ -1654,9 +1654,21 @@
   const CHOICES_COUNT = 10;
 
   // 正解部首 + デッキ内ダミーから CHOICES_COUNT 個を抽出
+  // 正解部首が他の漢字（jp）と同一なら、その漢字の構成部首はダミーから除外
+  // 例: 裸=衤,果 が正解で果=田,木 がデッキにあるとき、田と木をダミーに入れない
   function pickChoices(correctList) {
     const correct = Array.from(new Set(correctList));
-    const pool = uniqueRadicals().filter(r => !correct.includes(r));
+    const correctSet = new Set(correct);
+    const banned = new Set();
+    correct.forEach(r => {
+      const w = activeDeck.words.find(w => w.jp === r);
+      if (w && w.en) {
+        splitRadicals(w.en).forEach(p => {
+          if (!correctSet.has(p)) banned.add(p);
+        });
+      }
+    });
+    const pool = uniqueRadicals().filter(r => !correctSet.has(r) && !banned.has(r));
     const need = Math.max(0, CHOICES_COUNT - correct.length);
     const dummies = shuffle(pool).slice(0, need);
     return shuffle(correct.concat(dummies));
