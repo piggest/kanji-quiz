@@ -1204,9 +1204,9 @@
     will-change: transform;
   }
   .radical-btn.selected .orbit-particle.p1 { animation-delay: 0s; }
-  .radical-btn.selected .orbit-particle.p2 { animation-delay: -0.35s; }
-  .radical-btn.selected .orbit-particle.p3 { animation-delay: -0.70s; }
-  .radical-btn.selected .orbit-particle.p4 { animation-delay: -1.05s; }
+  .radical-btn.selected .orbit-particle.p2 { animation-delay: -0.47s; }
+  .radical-btn.selected .orbit-particle.p3 { animation-delay: -0.94s; }
+  .radical-btn.selected .orbit-particle.p4,
   .radical-btn.selected .orbit-particle.p5,
   .radical-btn.selected .orbit-particle.p6 { display: none; }
   @keyframes orbit {
@@ -1244,6 +1244,10 @@
     cursor: pointer;
   }
   .next-btn:hover { background: #5a67d8; }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+    .orbit-particle { display: none !important; }
+  }
 </style>
 </head>
 <body>
@@ -2028,38 +2032,28 @@
     // マージ瞬間にバーストconfetti（中央から放射）
     setTimeout(() => {
       confetti({
-        particleCount: 260,
+        particleCount: 140,
         spread: 360,
-        startVelocity: 55,
+        startVelocity: 50,
         origin: { x: 0.5, y: 0.5 },
         colors: ['#f6e05e', '#fc8181', '#63b3ed', '#68d391', '#b794f4', '#ffffff', '#ffd700']
       });
     }, 1100);
 
-    // 連続confetti
-    const duration = 2000;
-    const end = Date.now() + duration;
-    (function frame() {
-      confetti({
-        particleCount: 6,
-        angle: 60,
-        spread: 80,
-        origin: { x: 0, y: 0.7 },
-        colors: ['#f6e05e', '#fc8181', '#63b3ed', '#68d391', '#b794f4']
-      });
-      confetti({
-        particleCount: 6,
-        angle: 120,
-        spread: 80,
-        origin: { x: 1, y: 0.7 },
-        colors: ['#f6e05e', '#fc8181', '#63b3ed', '#68d391', '#b794f4']
-      });
-      if (Date.now() < end) requestAnimationFrame(frame);
-    })();
+    // 軽量化: 連続フレーム確率発射 → 単発に
     confetti({
-      particleCount: 150,
-      spread: 120,
-      origin: { y: 0.6 }
+      particleCount: 80,
+      angle: 60,
+      spread: 80,
+      origin: { x: 0, y: 0.7 },
+      colors: ['#f6e05e', '#fc8181', '#63b3ed', '#68d391', '#b794f4']
+    });
+    confetti({
+      particleCount: 80,
+      angle: 120,
+      spread: 80,
+      origin: { x: 1, y: 0.7 },
+      colors: ['#f6e05e', '#fc8181', '#63b3ed', '#68d391', '#b794f4']
     });
   }
 
